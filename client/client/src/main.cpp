@@ -1,98 +1,286 @@
+#include<SFML/Graphics.hpp>
+#include<SFML/Window.hpp>
+#include<SFML/System.hpp>
+#include<SFGUI/SFGUI.hpp>
+#include<Thor/Input.hpp>
+#include<Thor/Particles.hpp>
+#include<Thor/Vectors.hpp>
+#include<Thor/Math.hpp>
+#include<Thor/Animations.hpp>
+#include<SFGUI/Widgets.hpp>
+#include<string>
+#include<stdio.h>
+#include<functional>
 
-#include <Thor/Input.hpp>
-#include <Thor/Graphics/ToString.hpp>
-#include <SFML/Window.hpp>
-#include <iostream>
+sf::RenderWindow window;
+sf::View view;
+float deltaTime;
+const float MOVEMENT_SPEED = 400.0f;		// pixels per second
+const float WINDOW_WIDTH = 1280.0f;
+const float WINDOW_HEIGHT = 720.0f;
+thor::UniversalEmitter emitter;
+thor::ParticleSystem particle_system;
+int selected_rune = 0;
 
-// Enumeration for user-defined actions
-enum MyAction
+void OnQuit(thor::ActionContext<std::string> context)
 {
-	Run,
-	Jetpack,
-	Shoot,
-	Quit,
-	Resize,
-};
+	window.close();
+}
 
-// Callback function for Resize, Shoot (mouse click) and Run (joystick axis) actions
-void onResize(thor::ActionContext<MyAction> context);
-void onShoot(thor::ActionContext<MyAction> context);
-void onRun();
-
-int main()
+void OnLeft(thor::ActionContext<std::string> context)
 {
-	// Create and initialize window
-	sf::Window window(sf::VideoMode(400, 300), "Thor Action");
-	window.setFramerateLimit(20);
-	window.setKeyRepeatEnabled(false);
+	//printf("LEFT, %f\n", deltaTime);
+	view.move(sf::Vector2f(MOVEMENT_SPEED*-1.0f*deltaTime, 0.0f));
+}
 
-	// Create thor::ActionMap that maps MyAction values to thor::Action instances
-	thor::ActionMap<MyAction> map;
-	using thor::Action;
+void OnRight(thor::ActionContext<std::string> context)
+{
+	//printf("RIGHT, %f\n", deltaTime);
+	view.move(sf::Vector2f(MOVEMENT_SPEED*1.0f*deltaTime, 0.0f));
+}
 
-	// Jetpack: Press one of the shift keys and J (realtime input)
-	map[Jetpack] = (Action(sf::Keyboard::LShift) || Action(sf::Keyboard::RShift)) && Action(sf::Keyboard::J);
+void OnUp(thor::ActionContext<std::string> context)
+{
+	//printf("UP, %f\n", deltaTime);
+	view.move(sf::Vector2f(0.0f, MOVEMENT_SPEED*-1.0f*deltaTime));
+}
 
-	// Run: Displace X axis of joystick number 0 by more than 30% in either direction
-	map[Run] = Action(thor::joystick(0).axis(sf::Joystick::X).above(30.f))
-		|| Action(thor::joystick(0).axis(sf::Joystick::X).below(-30.f));
+void OnDown(thor::ActionContext<std::string> context)
+{
+	//printf("DOWN, %f\n", deltaTime);
+	view.move(sf::Vector2f(0.0f, MOVEMENT_SPEED*1.0f*deltaTime));
+}
 
-	// Shoot: Press left mouse button or button 2 of joystick number 0 (single events)
-	map[Shoot] = Action(sf::Mouse::Left, Action::PressOnce) || Action(thor::joystick(0).button(2), Action::PressOnce);
+void OnMouseDown(thor::ActionContext<std::string> context)
+{
 
-	// Quit: Release the escape key or click the [X] (single events)
-	map[Quit] = Action(sf::Keyboard::Escape, Action::ReleaseOnce) || Action(sf::Event::Closed);
+}
 
-	// Resize: Change window size (single event)
-	map[Resize] = Action(sf::Event::Resized);
-
-	// Create thor::EventSystem to connect Resize and Shoot actions with callbacks
-	// Use connect0() instead of connect() when callback has no parameter
-	thor::ActionMap<MyAction>::CallbackSystem system;
-	system.connect(Resize, &onResize);
-	system.connect(Shoot, &onShoot);
-	system.connect0(Run, &onRun);
-
-	// Main loop
-	for (;;)
+void OnMouseUp(thor::ActionContext<std::string> context)
+{
+	emitter.setParticlePosition(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
+	if (selected_rune == 1)
 	{
-		// Generate new actions (calls window.pollEvent(...))
-		map.update(window);
+		// Build color gradient
+		thor::ColorGradient gradient;
+		gradient[0.f] = sf::Color::Yellow;
+		gradient[0.5f] = sf::Color::Red;
+		gradient[1.f] = sf::Color::Black;
 
-		// Check which actions are currently in effect, react correspondingly
-		if (map.isActive(Jetpack))
-			std::cout << "Jetpack!" << std::endl;
-		if (map.isActive(Quit))
-			return 0;
+		// Create color and fade in/out animations
+		thor::ColorAnimation colorizer(gradient);
+		thor::FadeAnimation fader(0.1f, 0.1f);
 
-		// Forward actions to callbacks: Invokes onResize() in case of sf::Event::Resized events
-		map.invokeCallbacks(system, &window);
+		particle_system.clearAffectors();
+		// Add particle affectors
+		particle_system.addAffector(thor::AnimationAffector(colorizer));
+		particle_system.addAffector(thor::AnimationAffector(fader));
+		particle_system.addAffector(thor::TorqueAffector(100.f));
 
-		// Update window
-		window.display();
+		emitter.setParticlePosition(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
+		emitter.setParticleVelocity(thor::Distributions::circle(sf::Vector2f(0.0f, 0.0f), 100.f));
+		emitter.setEmissionRate(50.0f);
+		particle_system.addEmitter(thor::refEmitter(emitter), sf::seconds(0.35f));
+	}
+	else if (selected_rune == 2)
+	{
+		// Build color gradient
+		thor::ColorGradient gradient;
+		gradient[0.f] = sf::Color::Blue;
+		gradient[0.5f] = sf::Color::Black;
+		gradient[1.f] = sf::Color::Black;
+
+		// Create color and fade in/out animations
+		thor::ColorAnimation colorizer(gradient);
+		thor::FadeAnimation fader(0.1f, 0.1f);
+
+		particle_system.clearAffectors();
+		// Add particle affectors
+		particle_system.addAffector(thor::AnimationAffector(colorizer));
+		particle_system.addAffector(thor::AnimationAffector(fader));
+		particle_system.addAffector(thor::TorqueAffector(100.f));
+
+		emitter.setParticlePosition(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
+		emitter.setParticleVelocity(thor::Distributions::deflect(sf::Vector2f(0.0f, -100.0f), 90.0f));
+		emitter.setEmissionRate(100.0f);
+		particle_system.addEmitter(thor::refEmitter(emitter), sf::seconds(0.35f));
+	}
+	else if (selected_rune == 3)
+	{
+		// Build color gradient
+		thor::ColorGradient gradient;
+		gradient[0.f] = sf::Color::Green;
+		gradient[0.5f] = sf::Color::Cyan;
+		gradient[1.f] = sf::Color::Black;
+
+		// Create color and fade in/out animations
+		thor::ColorAnimation colorizer(gradient);
+		thor::FadeAnimation fader(0.1f, 0.1f);
+
+		particle_system.clearAffectors();
+		// Add particle affectors
+		particle_system.addAffector(thor::AnimationAffector(colorizer));
+		particle_system.addAffector(thor::AnimationAffector(fader));
+		particle_system.addAffector(thor::TorqueAffector(100.f));
+
+		emitter.setParticlePosition(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
+		emitter.setParticleVelocity(thor::Distributions::rect(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(100.0f, 100.0f)));
+		emitter.setEmissionRate(150.0f);
+		particle_system.addEmitter(thor::refEmitter(emitter), sf::seconds(2.0f));
+	}
+	else if (selected_rune == 4)
+	{
+		// Build color gradient
+		thor::ColorGradient gradient;
+		gradient[0.f] = sf::Color::Magenta;
+		gradient[0.5f] = sf::Color::Green;
+		gradient[1.f] = sf::Color::Black;
+
+		// Create color and fade in/out animations
+		thor::ColorAnimation colorizer(gradient);
+		thor::FadeAnimation fader(0.1f, 0.1f);
+
+		particle_system.clearAffectors();
+		// Add particle affectors
+		particle_system.addAffector(thor::AnimationAffector(colorizer));
+		particle_system.addAffector(thor::AnimationAffector(fader));
+		particle_system.addAffector(thor::TorqueAffector(100.f));
+		emitter.setParticleVelocity(thor::Distributions::circle(sf::Vector2f(0.0f, 0.0f), 250.0f));
+		emitter.setEmissionRate(500.0f);
+		particle_system.addEmitter(thor::refEmitter(emitter), sf::seconds(1.0f));
 	}
 }
 
-void onResize(thor::ActionContext<MyAction> context)
+void OnButtonClicked()
 {
-	// The sf::Event member variable called type has always the value sf::Event::Resized, as specified in the thor::Action
-	// constructor. Since the Resize action has been triggered by an sf::Event (and not by a sf::Keyboard, sf::Mouse or
-	// sf::Joystick), we can also be sure that context.event is no null pointer.
-	sf::Event event = *context.event;
-	std::cout << "Resized!   New size = (" << event.size.width << ", " << event.size.height << ")" << std::endl;
+
 }
 
-void onShoot(thor::ActionContext<MyAction> context)
+void OnRuneOne()
 {
-	// context.Window is a pointer to the sf::Window passed to the thor::ActionMap constructor. It can
-	// be used for mouse input relative to a window, as follows:
-	sf::Vector2i mousePosition = sf::Mouse::getPosition(*context.window);
-	std::cout << "Shoot: " << thor::toString(mousePosition) << std::endl;
+	selected_rune = 1;
 }
 
-void onRun()
+void OnRuneTwo()
 {
-	// Since no event is associated with a joystick axis action, we access the global sf::Joystick
-	float axisPosition = sf::Joystick::getAxisPosition(0, sf::Joystick::X);
-	std::cout << "Run at " << axisPosition << "% speed." << std::endl;
+	selected_rune = 2;
+}
+
+void OnRuneThree()
+{
+	selected_rune = 3;
+}
+
+void OnRuneFour()
+{
+	selected_rune = 4;
+}
+
+
+int main()
+{
+	deltaTime = 0;
+	sfg::SFGUI sfgui;
+
+	// map sprite
+	sf::Texture map_texture;
+	sf::Sprite map_sprite;
+	map_texture.loadFromFile("resources/map.png");
+	map_sprite.setTexture(map_texture);
+
+	// window
+	window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, 32), "Runestone");
+	view.setSize(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
+	view.setCenter(sf::Vector2f(0, 0));
+	window.setView(view);
+
+	// timer
+	sf::Clock clock;
+
+	// thor actions
+	thor::Action quit(sf::Event::Closed);
+	thor::Action left(sf::Keyboard::A, thor::Action::Hold);
+	thor::Action right(sf::Keyboard::D, thor::Action::Hold);
+	thor::Action up(sf::Keyboard::W, thor::Action::Hold);
+	thor::Action down(sf::Keyboard::S, thor::Action::Hold);
+	thor::Action mouse_down(sf::Mouse::Left, thor::Action::PressOnce);
+	thor::Action mouse_up(sf::Mouse::Left, thor::Action::ReleaseOnce);
+
+	// thor action map
+	thor::ActionMap<std::string> action_map;
+	action_map["quit"] = quit;
+	action_map["left"] = left;
+	action_map["right"] = right;
+	action_map["up"] = up;
+	action_map["down"] = down;
+	action_map["mouse_down"] = mouse_down;
+	action_map["mouse_up"] = mouse_up;
+	thor::ActionMap<std::string>::CallbackSystem action_callbacks;
+	action_callbacks.connect("quit", &OnQuit);
+	action_callbacks.connect("left", &OnLeft);
+	action_callbacks.connect("right", &OnRight);
+	action_callbacks.connect("up", &OnUp);
+	action_callbacks.connect("down", &OnDown);
+	action_callbacks.connect("mouse_down", &OnMouseDown);
+	action_callbacks.connect("mouse_up", &OnMouseUp);
+
+	// thor particles
+	sf::Texture particleTexture;
+	particleTexture.loadFromFile("Media/particle.png");
+	emitter.setEmissionRate(100.0f);
+	emitter.setParticleLifetime(sf::seconds(1.0f));
+
+	particle_system.setTexture(particleTexture);
+	particle_system.setTexture(particleTexture);
+
+	// sfgui
+	auto sfgui_window = sfg::Window::Create();
+	sfgui_window->SetTitle("Runestones: ");
+	auto rune_one = sfg::Button::Create("Rune One");
+	rune_one->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnRuneOne));
+	rune_one->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnButtonClicked));
+	auto rune_two = sfg::Button::Create("Rune Two");
+	rune_two->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnRuneTwo));
+	rune_two->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnButtonClicked));
+	auto rune_three = sfg::Button::Create("Rune Three");
+	rune_three->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnRuneThree));
+	rune_three->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnButtonClicked));
+	auto rune_four = sfg::Button::Create("Rune Four");
+	rune_four->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnRuneFour));
+	rune_four->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnButtonClicked));
+	auto hbox = sfg::Box::Create(sfg::Box::Orientation::HORIZONTAL, 4.0f);
+	hbox->Pack(rune_one);
+	hbox->Pack(rune_two);
+	hbox->Pack(rune_three);
+	hbox->Pack(rune_four);
+	sfgui_window->Add(hbox);
+	sfgui_window->SetStyle(!sfg::Window::Style::RESIZE);
+	sfgui_window->SetPosition(sf::Vector2f((WINDOW_WIDTH / 2.0f) -
+		(sfgui_window->GetAllocation().width / 2.0f), WINDOW_HEIGHT - sfgui_window->GetAllocation().height));
+
+	while (window.isOpen())
+	{
+		deltaTime = clock.restart().asSeconds();
+		action_map.clearEvents();
+
+		sf::Event event;
+		while (window.pollEvent(event))
+		{
+			sfgui_window->HandleEvent(event);
+			action_map.pushEvent(event);
+		}
+
+		particle_system.update(sf::seconds(deltaTime));
+
+		sfgui_window->Update(deltaTime);
+		action_map.invokeCallbacks(action_callbacks, &window);
+		window.setView(view);
+		window.clear(sf::Color::Black);
+		window.draw(map_sprite);
+		window.draw(particle_system);
+		sfgui.Display(window);
+		window.display();
+	}
+
+	return 0;
 }
