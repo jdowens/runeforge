@@ -74,14 +74,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\thor-v2.0-sdk\extlibs\aurora\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\thor-v2.0-sdk\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\SFML-Visual_Studio2015RCx32\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\SFGUI-0.3.0\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\thor-v2.0-sdk\extlibs\aurora\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\thor-v2.0-sdk\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\SFML-Visual_Studio2015RCx32\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\SFGUI-0.3.0\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\thor-v2.0-sdk\extlibs\aurora\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\thor-v2.0-sdk\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\SFML-Visual_Studio2015RCx32\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\SFGUI-0.3.0\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\thor-v2.0-sdk\extlibs\aurora\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\thor-v2.0-sdk\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\SFML-Visual_Studio2015RCx32\include;C:\Users\james\Documents\GitHubVisualStudio\runeforge\client\client\extlibs\SFGUI-0.3.0\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>

@@ -1,286 +1,334 @@
-#include<SFML/Graphics.hpp>
+#include<stdio.h>
+#include<stdlib.h>
+#include<time.h>
+#include<string>
+#include<vector>
 #include<SFML/Window.hpp>
-#include<SFML/System.hpp>
-#include<SFGUI/SFGUI.hpp>
+#include<SFML/Graphics.hpp>
+#include<SFML/Audio.hpp>
 #include<Thor/Input.hpp>
 #include<Thor/Particles.hpp>
-#include<Thor/Vectors.hpp>
 #include<Thor/Math.hpp>
 #include<Thor/Animations.hpp>
-#include<SFGUI/Widgets.hpp>
-#include<string>
-#include<stdio.h>
-#include<functional>
+#include<Thor/Vectors.hpp>
 
-sf::RenderWindow window;
-sf::View view;
-float deltaTime;
-const float MOVEMENT_SPEED = 400.0f;		// pixels per second
-const float WINDOW_WIDTH = 1280.0f;
-const float WINDOW_HEIGHT = 720.0f;
-thor::UniversalEmitter emitter;
-thor::ParticleSystem particle_system;
-int selected_rune = 0;
-
-void OnQuit(thor::ActionContext<std::string> context)
-{
-	window.close();
-}
-
-void OnLeft(thor::ActionContext<std::string> context)
-{
-	//printf("LEFT, %f\n", deltaTime);
-	view.move(sf::Vector2f(MOVEMENT_SPEED*-1.0f*deltaTime, 0.0f));
-}
-
-void OnRight(thor::ActionContext<std::string> context)
-{
-	//printf("RIGHT, %f\n", deltaTime);
-	view.move(sf::Vector2f(MOVEMENT_SPEED*1.0f*deltaTime, 0.0f));
-}
-
-void OnUp(thor::ActionContext<std::string> context)
-{
-	//printf("UP, %f\n", deltaTime);
-	view.move(sf::Vector2f(0.0f, MOVEMENT_SPEED*-1.0f*deltaTime));
-}
-
-void OnDown(thor::ActionContext<std::string> context)
-{
-	//printf("DOWN, %f\n", deltaTime);
-	view.move(sf::Vector2f(0.0f, MOVEMENT_SPEED*1.0f*deltaTime));
-}
-
-void OnMouseDown(thor::ActionContext<std::string> context)
-{
-
-}
-
-void OnMouseUp(thor::ActionContext<std::string> context)
-{
-	emitter.setParticlePosition(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
-	if (selected_rune == 1)
-	{
-		// Build color gradient
-		thor::ColorGradient gradient;
-		gradient[0.f] = sf::Color::Yellow;
-		gradient[0.5f] = sf::Color::Red;
-		gradient[1.f] = sf::Color::Black;
-
-		// Create color and fade in/out animations
-		thor::ColorAnimation colorizer(gradient);
-		thor::FadeAnimation fader(0.1f, 0.1f);
-
-		particle_system.clearAffectors();
-		// Add particle affectors
-		particle_system.addAffector(thor::AnimationAffector(colorizer));
-		particle_system.addAffector(thor::AnimationAffector(fader));
-		particle_system.addAffector(thor::TorqueAffector(100.f));
-
-		emitter.setParticlePosition(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
-		emitter.setParticleVelocity(thor::Distributions::circle(sf::Vector2f(0.0f, 0.0f), 100.f));
-		emitter.setEmissionRate(50.0f);
-		particle_system.addEmitter(thor::refEmitter(emitter), sf::seconds(0.35f));
-	}
-	else if (selected_rune == 2)
-	{
-		// Build color gradient
-		thor::ColorGradient gradient;
-		gradient[0.f] = sf::Color::Blue;
-		gradient[0.5f] = sf::Color::Black;
-		gradient[1.f] = sf::Color::Black;
-
-		// Create color and fade in/out animations
-		thor::ColorAnimation colorizer(gradient);
-		thor::FadeAnimation fader(0.1f, 0.1f);
-
-		particle_system.clearAffectors();
-		// Add particle affectors
-		particle_system.addAffector(thor::AnimationAffector(colorizer));
-		particle_system.addAffector(thor::AnimationAffector(fader));
-		particle_system.addAffector(thor::TorqueAffector(100.f));
-
-		emitter.setParticlePosition(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
-		emitter.setParticleVelocity(thor::Distributions::deflect(sf::Vector2f(0.0f, -100.0f), 90.0f));
-		emitter.setEmissionRate(100.0f);
-		particle_system.addEmitter(thor::refEmitter(emitter), sf::seconds(0.35f));
-	}
-	else if (selected_rune == 3)
-	{
-		// Build color gradient
-		thor::ColorGradient gradient;
-		gradient[0.f] = sf::Color::Green;
-		gradient[0.5f] = sf::Color::Cyan;
-		gradient[1.f] = sf::Color::Black;
-
-		// Create color and fade in/out animations
-		thor::ColorAnimation colorizer(gradient);
-		thor::FadeAnimation fader(0.1f, 0.1f);
-
-		particle_system.clearAffectors();
-		// Add particle affectors
-		particle_system.addAffector(thor::AnimationAffector(colorizer));
-		particle_system.addAffector(thor::AnimationAffector(fader));
-		particle_system.addAffector(thor::TorqueAffector(100.f));
-
-		emitter.setParticlePosition(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
-		emitter.setParticleVelocity(thor::Distributions::rect(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(100.0f, 100.0f)));
-		emitter.setEmissionRate(150.0f);
-		particle_system.addEmitter(thor::refEmitter(emitter), sf::seconds(2.0f));
-	}
-	else if (selected_rune == 4)
-	{
-		// Build color gradient
-		thor::ColorGradient gradient;
-		gradient[0.f] = sf::Color::Magenta;
-		gradient[0.5f] = sf::Color::Green;
-		gradient[1.f] = sf::Color::Black;
-
-		// Create color and fade in/out animations
-		thor::ColorAnimation colorizer(gradient);
-		thor::FadeAnimation fader(0.1f, 0.1f);
-
-		particle_system.clearAffectors();
-		// Add particle affectors
-		particle_system.addAffector(thor::AnimationAffector(colorizer));
-		particle_system.addAffector(thor::AnimationAffector(fader));
-		particle_system.addAffector(thor::TorqueAffector(100.f));
-		emitter.setParticleVelocity(thor::Distributions::circle(sf::Vector2f(0.0f, 0.0f), 250.0f));
-		emitter.setEmissionRate(500.0f);
-		particle_system.addEmitter(thor::refEmitter(emitter), sf::seconds(1.0f));
-	}
-}
-
-void OnButtonClicked()
-{
-
-}
-
-void OnRuneOne()
-{
-	selected_rune = 1;
-}
-
-void OnRuneTwo()
-{
-	selected_rune = 2;
-}
-
-void OnRuneThree()
-{
-	selected_rune = 3;
-}
-
-void OnRuneFour()
-{
-	selected_rune = 4;
-}
-
+const int WINDOW_WIDTH = 1280;
+const int WINDOW_HEIGHT = 720;
+const sf::IntRect swordRect1(0, 0, 64, 512);
+const sf::IntRect swordRect2(65, 0, 64, 512);
+const sf::IntRect swordRect3(130, 0, 64, 512);
+const sf::IntRect swordRect4(195, 0, 64, 512);
+const int MAX_CLICKS = 8;
 
 int main()
 {
-	deltaTime = 0;
-	sfg::SFGUI sfgui;
+	sf::Font font;
+	font.loadFromFile("resources/Fonts/arial.ttf");
+	sf::Text clickCountText;
+	sf::Text goldText;
+	sf::Text bankText;
+	sf::Text penaltyText;
+	clickCountText.setString("0");
+	clickCountText.setFont(font);
+	clickCountText.setCharacterSize(24);
+	clickCountText.setColor(sf::Color::White);
+	goldText.setString("0");
+	goldText.setFont(font);
+	goldText.setCharacterSize(64);
+	goldText.setColor(sf::Color::Yellow);
+	bankText.setString("0");
+	bankText.setFont(font);
+	bankText.setCharacterSize(24);
+	bankText.setColor(sf::Color::Yellow);
+	bankText.setPosition(0.0f, 32.0f);
+	penaltyText.setString("- 50");
+	penaltyText.setFont(font);
+	penaltyText.setCharacterSize(64);
+	penaltyText.setColor(sf::Color::Red);
 
-	// map sprite
-	sf::Texture map_texture;
-	sf::Sprite map_sprite;
-	map_texture.loadFromFile("resources/map.png");
-	map_sprite.setTexture(map_texture);
+	std::srand(std::time(NULL));
+	sf::Texture swordTexture;
+	sf::Sprite swordSprite;
+	swordTexture.loadFromFile("resources/TestSword/testsword.png");
+	swordSprite.setTexture(swordTexture);
+	swordSprite.setTextureRect(swordRect1);
+	swordSprite.setPosition(sf::Vector2f(WINDOW_WIDTH / 2 - swordRect1.width/2, WINDOW_HEIGHT / 2 - swordRect1.height/2));
 
-	// window
-	window.create(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, 32), "Runestone");
-	view.setSize(sf::Vector2f(WINDOW_WIDTH, WINDOW_HEIGHT));
-	view.setCenter(sf::Vector2f(0, 0));
-	window.setView(view);
+	// background
+	sf::Texture backgroundTexture;
+	backgroundTexture.loadFromFile("resources/test_background.jpg");
+	sf::Sprite background;
+	background.setTexture(backgroundTexture);
 
-	// timer
+	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, 32), "Rune Forge");
+
 	sf::Clock clock;
 
-	// thor actions
-	thor::Action quit(sf::Event::Closed);
-	thor::Action left(sf::Keyboard::A, thor::Action::Hold);
-	thor::Action right(sf::Keyboard::D, thor::Action::Hold);
-	thor::Action up(sf::Keyboard::W, thor::Action::Hold);
-	thor::Action down(sf::Keyboard::S, thor::Action::Hold);
-	thor::Action mouse_down(sf::Mouse::Left, thor::Action::PressOnce);
-	thor::Action mouse_up(sf::Mouse::Left, thor::Action::ReleaseOnce);
+	// clicks and rects
+	int maxStepOneClicks = (std::rand() % MAX_CLICKS) + 1;
+	int maxStepTwoClicks = (std::rand() % MAX_CLICKS) + 1;
+	int maxStepThreeClicks = (std::rand() % MAX_CLICKS) + 1;
+	int stepOneClicks = maxStepOneClicks;
+	int stepTwoClicks = maxStepTwoClicks;
+	int stepThreeClicks = maxStepThreeClicks;
+	int currentRegion = 1;
+	sf::IntRect stepOneRect(swordSprite.getGlobalBounds().left + swordSprite.getGlobalBounds().width - 16, swordSprite.getGlobalBounds().top, 16, 512);
+	sf::IntRect stepTwoRect(swordSprite.getGlobalBounds().left, swordSprite.getGlobalBounds().top, 16, 512);
+	sf::IntRect stepThreeRect(swordSprite.getGlobalBounds().left + (swordSprite.getGlobalBounds().width / 2) - 32, swordSprite.getGlobalBounds().top, 64, 64);
+	sf::IntRect stepFourRect(WINDOW_WIDTH - 128, 0, 128, WINDOW_HEIGHT);
+	sf::RectangleShape region1;
+	region1.setSize(sf::Vector2f(stepOneRect.width, stepOneRect.height));
+	region1.setPosition(stepOneRect.left, stepOneRect.top);
+	region1.setFillColor(sf::Color::Transparent);
+	region1.setOutlineThickness(4.0f);
+	region1.setOutlineColor(sf::Color::Red);
 
-	// thor action map
-	thor::ActionMap<std::string> action_map;
-	action_map["quit"] = quit;
-	action_map["left"] = left;
-	action_map["right"] = right;
-	action_map["up"] = up;
-	action_map["down"] = down;
-	action_map["mouse_down"] = mouse_down;
-	action_map["mouse_up"] = mouse_up;
-	thor::ActionMap<std::string>::CallbackSystem action_callbacks;
-	action_callbacks.connect("quit", &OnQuit);
-	action_callbacks.connect("left", &OnLeft);
-	action_callbacks.connect("right", &OnRight);
-	action_callbacks.connect("up", &OnUp);
-	action_callbacks.connect("down", &OnDown);
-	action_callbacks.connect("mouse_down", &OnMouseDown);
-	action_callbacks.connect("mouse_up", &OnMouseUp);
+	sf::RectangleShape region2;
+	region2.setSize(sf::Vector2f(stepTwoRect.width, stepTwoRect.height));
+	region2.setPosition(stepTwoRect.left, stepTwoRect.top);
+	region2.setFillColor(sf::Color::Transparent);
+	region2.setOutlineThickness(4.0f);
+	region2.setOutlineColor(sf::Color::Red);
 
-	// thor particles
+	sf::RectangleShape region3;
+	region3.setSize(sf::Vector2f(stepThreeRect.width, stepThreeRect.height));
+	region3.setPosition(stepThreeRect.left, stepThreeRect.top);
+	region3.setFillColor(sf::Color::Transparent);
+	region3.setOutlineThickness(4.0f);
+	region3.setOutlineColor(sf::Color::Red);
+
+	sf::RectangleShape region4;
+	region4.setSize(sf::Vector2f(stepFourRect.width, stepFourRect.height));
+	region4.setPosition(stepFourRect.left, stepFourRect.top);
+	region4.setFillColor(sf::Color::Transparent);
+	region4.setOutlineThickness(4.0f);
+	region4.setOutlineColor(sf::Color::Yellow);
+
+	bool swordSelected = false;
+	sf::Vector2f mousePos;
+	float goldTextTime = 0.0f;
+	float penaltyTextTime = 0.0f;
+	int bankAccount = 0;
+
+	int goldEarned = (maxStepOneClicks + maxStepTwoClicks + maxStepThreeClicks) * 10;
+
+	// particles
+	thor::UniversalEmitter emitter;
+	thor::ParticleSystem particle_system;
 	sf::Texture particleTexture;
 	particleTexture.loadFromFile("Media/particle.png");
-	emitter.setEmissionRate(100.0f);
 	emitter.setParticleLifetime(sf::seconds(1.0f));
-
-	particle_system.setTexture(particleTexture);
 	particle_system.setTexture(particleTexture);
 
-	// sfgui
-	auto sfgui_window = sfg::Window::Create();
-	sfgui_window->SetTitle("Runestones: ");
-	auto rune_one = sfg::Button::Create("Rune One");
-	rune_one->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnRuneOne));
-	rune_one->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnButtonClicked));
-	auto rune_two = sfg::Button::Create("Rune Two");
-	rune_two->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnRuneTwo));
-	rune_two->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnButtonClicked));
-	auto rune_three = sfg::Button::Create("Rune Three");
-	rune_three->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnRuneThree));
-	rune_three->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnButtonClicked));
-	auto rune_four = sfg::Button::Create("Rune Four");
-	rune_four->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnRuneFour));
-	rune_four->GetSignal(sfg::Button::OnMouseLeftPress).Connect(std::bind(&OnButtonClicked));
-	auto hbox = sfg::Box::Create(sfg::Box::Orientation::HORIZONTAL, 4.0f);
-	hbox->Pack(rune_one);
-	hbox->Pack(rune_two);
-	hbox->Pack(rune_three);
-	hbox->Pack(rune_four);
-	sfgui_window->Add(hbox);
-	sfgui_window->SetStyle(!sfg::Window::Style::RESIZE);
-	sfgui_window->SetPosition(sf::Vector2f((WINDOW_WIDTH / 2.0f) -
-		(sfgui_window->GetAllocation().width / 2.0f), WINDOW_HEIGHT - sfgui_window->GetAllocation().height));
+	// Build color gradient
+	thor::ColorGradient gradient;
+	gradient[0.f] = sf::Color(200, 200, 200);
+	gradient[0.5f] = sf::Color::Red;
+	gradient[1.f] = sf::Color::Black;
+
+	// Create color and fade in/out animations
+	thor::ColorAnimation colorizer(gradient);
+	thor::FadeAnimation fader(0.1f, 0.1f);
+
+	particle_system.clearAffectors();
+	// Add particle affectors
+	particle_system.addAffector(thor::AnimationAffector(colorizer));
+	particle_system.addAffector(thor::AnimationAffector(fader));
+	particle_system.addAffector(thor::TorqueAffector(100.f));
+	particle_system.addAffector(thor::ForceAffector(sf::Vector2f(0.f, 200.0f)));
+
+	emitter.setParticlePosition(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
+	emitter.setParticleVelocity(thor::Distributions::deflect(thor::PolarVector2f(200.0f, -90.0f), 180.0f));
+	emitter.setEmissionRate(5.0f);
+
+	// sounds
+	std::vector<sf::SoundBuffer> hammerSounds;
+	sf::SoundBuffer hammerSound1;
+	sf::SoundBuffer hammerSound2;
+	sf::SoundBuffer hammerSound3;
+	sf::SoundBuffer goldEarnedSound;
+	sf::SoundBuffer penaltySound;
+	hammerSound1.loadFromFile("resources/Sounds/Effects/Explosion.ogg");
+	hammerSound2.loadFromFile("resources/Sounds/Effects/Explosion3.ogg");
+	hammerSound3.loadFromFile("resources/Sounds/Effects/Explosion6.ogg");
+	hammerSounds.push_back(hammerSound1);
+	hammerSounds.push_back(hammerSound2);
+	hammerSounds.push_back(hammerSound3);
+	goldEarnedSound.loadFromFile("resources/Sounds/Effects/Pickup_Coin18.ogg");
+	penaltySound.loadFromFile("resources/Sounds/Effects/Randomize11.ogg");
+	sf::Sound soundEffect;
 
 	while (window.isOpen())
 	{
-		deltaTime = clock.restart().asSeconds();
-		action_map.clearEvents();
+		float dt = clock.restart().asSeconds();
+		goldTextTime -= dt;
+		penaltyTextTime -= dt;
+		if (goldTextTime < 0.0f)
+			goldTextTime = 0.0f;
+		if (penaltyTextTime < 0.0f)
+			penaltyTextTime = 0.0f;
+
+		particle_system.update(sf::seconds(dt));
+
+		goldText.setColor(sf::Color(goldText.getColor().r, goldText.getColor().g, goldText.getColor().b, static_cast<float>((goldTextTime / 3.0f) * 255.0f)));
+		penaltyText.setColor(sf::Color(penaltyText.getColor().r, penaltyText.getColor().g, penaltyText.getColor().b, static_cast<float>((penaltyTextTime / 3.0f) * 255.0f)));
+
+		if (currentRegion == 1)
+		{
+			clickCountText.setString("Clicks remaining: " + std::to_string(stepOneClicks));
+			region1.setOutlineColor(sf::Color(region1.getOutlineColor().r, region1.getOutlineColor().g, region1.getOutlineColor().b, 32 + (stepOneClicks * 28)-1));
+		}
+		else if (currentRegion == 2)
+		{
+			clickCountText.setString("Clicks remaining: " + std::to_string(stepTwoClicks));
+			region2.setOutlineColor(sf::Color(region2.getOutlineColor().r, region2.getOutlineColor().g, region2.getOutlineColor().b, 32 + (stepTwoClicks * 28) - 1));
+		}
+		else if (currentRegion == 3)
+		{
+			clickCountText.setString("Clicks remaining: " + std::to_string(stepThreeClicks));
+			region3.setOutlineColor(sf::Color(region3.getOutlineColor().r, region3.getOutlineColor().g, region3.getOutlineColor().b, 32 + (stepThreeClicks * 28) - 1));
+		}
+		else
+		{
+			clickCountText.setString("Drag and finish!");
+		}
+
 
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
-			sfgui_window->HandleEvent(event);
-			action_map.pushEvent(event);
+			if (event.type == sf::Event::Closed)
+			{
+				window.close();
+			}
+			else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left)
+			{
+				if (swordSprite.getGlobalBounds().contains(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window))) && currentRegion == 4)
+				{
+					swordSelected = true;
+					mousePos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
+					swordSprite.setOrigin(swordSprite.getInverseTransform().transformPoint(mousePos));
+				}
+
+				if (stepOneRect.contains(sf::Mouse::getPosition(window)))
+				{
+					printf("Region 1 clicked!\n");
+					if (stepOneClicks > 0)
+					{
+						stepOneClicks--;
+						if (stepOneClicks == 0)
+							currentRegion = 2;
+						emitter.setParticlePosition(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
+						particle_system.addEmitter(thor::refEmitter(emitter), sf::seconds(0.35f));
+						soundEffect.setBuffer(hammerSounds[std::rand() % 3]);
+						soundEffect.play();
+					}
+				}
+				else if (stepOneClicks == 0 && stepTwoRect.contains(sf::Mouse::getPosition(window)))
+				{
+					printf("Region 2 clicked!\n");
+					if (stepTwoClicks > 0)
+					{
+						stepTwoClicks--;
+						if (stepTwoClicks == 0)
+							currentRegion = 3;
+						emitter.setParticlePosition(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
+						particle_system.addEmitter(thor::refEmitter(emitter), sf::seconds(0.35f));
+						soundEffect.setBuffer(hammerSounds[std::rand() % 3]);
+						soundEffect.play();
+					}
+				}
+				else if (stepTwoClicks == 0 && stepThreeRect.contains(sf::Mouse::getPosition(window)))
+				{
+					printf("Region 3 clicked!\n");
+					if (stepThreeClicks > 0)
+					{
+						stepThreeClicks--;
+						if (stepThreeClicks == 0)
+							currentRegion = 4;
+						emitter.setParticlePosition(window.mapPixelToCoords(sf::Mouse::getPosition(window)));
+						particle_system.addEmitter(thor::refEmitter(emitter), sf::seconds(0.35f));
+						soundEffect.setBuffer(hammerSounds[std::rand() % 3]);
+						soundEffect.play();
+					}
+				}
+				else if (currentRegion != 4)
+				{
+					penaltyTextTime = 3.0f;
+					penaltyText.setPosition(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)));
+					goldEarned -= 50;
+					if (goldEarned < 0)
+						goldEarned = 0;
+					soundEffect.setBuffer(penaltySound);
+					soundEffect.play();
+				}
+			}
+			else if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left)
+			{
+				
+				if (swordSelected && region4.getGlobalBounds().contains(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window))))
+				{
+					bankAccount += goldEarned;
+					bankText.setString("Bank: " + std::to_string(bankAccount));
+					goldText.setString("+ " + std::to_string(goldEarned));
+					maxStepOneClicks = (std::rand() % MAX_CLICKS) + 1;
+					maxStepTwoClicks = (std::rand() % MAX_CLICKS) + 1;
+					maxStepThreeClicks = (std::rand() % MAX_CLICKS) + 1;
+					stepOneClicks = maxStepOneClicks;
+					stepTwoClicks = maxStepTwoClicks;
+					stepThreeClicks = maxStepThreeClicks;
+					goldEarned = (maxStepOneClicks + maxStepTwoClicks + maxStepThreeClicks) * 10;
+					currentRegion = 1;
+					swordSprite.setTextureRect(swordRect1);
+					swordSprite.setPosition(sf::Vector2f(WINDOW_WIDTH / 2 - swordRect1.width / 2, WINDOW_HEIGHT / 2 - swordRect1.height / 2));
+					swordSprite.setOrigin(sf::Vector2f(0.0f, 0.0f));
+					goldTextTime = 3.0f;
+					sf::Vector2f curMousePos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
+					goldText.setPosition(curMousePos.x - 256, curMousePos.y);
+					soundEffect.setBuffer(goldEarnedSound);
+					soundEffect.play();
+				}
+				swordSelected = false;
+			}
 		}
 
-		particle_system.update(sf::seconds(deltaTime));
+		// if done allow drag
+		if (currentRegion == 4)
+		{
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && swordSelected)
+			{
+				sf::Vector2f newPos;
+				newPos.x = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)).x - mousePos.x + swordSprite.getGlobalBounds().left;
+				newPos.y = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)).y - mousePos.y + swordSprite.getGlobalBounds().top;
+				swordSprite.setPosition(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)));
+			}
+		}
 
-		sfgui_window->Update(deltaTime);
-		action_map.invokeCallbacks(action_callbacks, &window);
-		window.setView(view);
-		window.clear(sf::Color::Black);
-		window.draw(map_sprite);
+		if (stepOneClicks == 0)
+			swordSprite.setTextureRect(swordRect2);
+		if (stepTwoClicks == 0)
+			swordSprite.setTextureRect(swordRect3);
+		if (stepThreeClicks == 0)
+			swordSprite.setTextureRect(swordRect4);
+
+		window.clear(sf::Color::Blue);
+		window.draw(background);
+		window.draw(swordSprite);
+		if (currentRegion == 1)
+			window.draw(region1);
+		else if (currentRegion == 2)
+			window.draw(region2);
+		else if (currentRegion == 3)
+			window.draw(region3);
+		window.draw(region4);
 		window.draw(particle_system);
-		sfgui.Display(window);
+		window.draw(clickCountText);
+		window.draw(bankText);
+		if (goldTextTime > 0.0f)
+			window.draw(goldText);
+		if (penaltyTextTime > 0.0f)
+			window.draw(penaltyText);
 		window.display();
 	}
 
-	return 0;
 }
