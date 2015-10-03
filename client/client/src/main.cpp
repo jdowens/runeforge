@@ -116,7 +116,7 @@ int main()
 	thor::UniversalEmitter emitter;
 	thor::ParticleSystem particle_system;
 	sf::Texture particleTexture;
-	particleTexture.loadFromFile("Media/particle.png");
+	particleTexture.loadFromFile("resources/Particles/particle.png");
 	emitter.setParticleLifetime(sf::seconds(1.0f));
 	particle_system.setTexture(particleTexture);
 
@@ -157,6 +157,7 @@ int main()
 	goldEarnedSound.loadFromFile("resources/Sounds/Effects/Pickup_Coin18.ogg");
 	penaltySound.loadFromFile("resources/Sounds/Effects/Randomize11.ogg");
 	sf::Sound soundEffect;
+	soundEffect.setVolume(5.0f);
 
 	while (window.isOpen())
 	{
@@ -330,5 +331,5 @@ int main()
 			window.draw(penaltyText);
 		window.display();
 	}
-
+	return 0;
 }
